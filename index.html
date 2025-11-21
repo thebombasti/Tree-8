@@ -4,8 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Drive File Manager</title>
-    <!-- Load Tailwind CSS -->
+    
+    <!-- FIX 1: Load Tailwind CDN FIRST -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FIX 1: Tailwind Configuration Script SECOND (Now 'tailwind' is defined) -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    
     <style>
         /* Custom scrollbar for file list */
         .file-list::-webkit-scrollbar {
@@ -15,10 +24,13 @@
             background-color: #a0aec0;
             border-radius: 3px;
         }
+        .dark .file-list::-webkit-scrollbar-thumb {
+            background-color: #4b5563;
+        }
         /* Style for the built-in console */
         .activity-log {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            background-color: #1f2937; /* Dark background */
+            background-color: #1f2937; /* Dark background (fixed for high contrast) */
             color: #d1d5db; /* Light gray text */
             max-height: 250px;
             overflow-y: auto;
@@ -37,32 +49,45 @@
         .log-info { color: #93c5fd; } /* Blue for info */
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen p-4 sm:p-8 font-sans flex justify-center">
+<!-- Apply background classes that respond to the dark mode class -->
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen p-4 sm:p-8 font-sans flex justify-center">
 
-    <div class="max-w-4xl w-full bg-white shadow-2xl rounded-xl p-6 md:p-10 space-y-10">
+    <div class="max-w-4xl w-full bg-white dark:bg-gray-800 shadow-2xl dark:shadow-xl dark:border dark:border-gray-700 rounded-xl p-6 md:p-10 space-y-10 transition-colors duration-300">
 
-        <!-- Header -->
-        <header class="text-center">
-            <h1 class="text-4xl font-extrabold text-indigo-700">Secure Drive File Uploader</h1>
-            <p class="text-gray-500 mt-2">Frontend hosted on GitHub Pages, secure backend via Google Apps Script.</p>
+        <!-- Header and Theme Switcher -->
+        <header class="text-center relative">
+            <h1 class="text-4xl font-extrabold text-indigo-700 dark:text-indigo-400">Secure Drive File Uploader</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">Frontend hosted on GitHub Pages, secure backend via Google Apps Script.</p>
+            
+            <!-- Theme Toggle Button -->
+            <button id="themeToggle" class="absolute top-0 right-0 p-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition duration-300 rounded-full">
+                <!-- Sun Icon (Default/Light Mode) -->
+                <svg id="sunIcon" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <!-- Moon Icon (Dark Mode) -->
+                <svg id="moonIcon" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
         </header>
 
         <!-- Upload Section -->
-        <section class="p-6 border border-indigo-200 rounded-xl bg-indigo-50 shadow-inner">
-            <h2 class="text-2xl font-semibold text-indigo-600 mb-4">Upload File</h2>
+        <section class="p-6 border border-indigo-200 dark:border-indigo-700 rounded-xl bg-indigo-50 dark:bg-gray-700 shadow-inner transition-colors duration-300">
+            <h2 class="text-2xl font-semibold text-indigo-600 dark:text-indigo-400 mb-4">Upload File</h2>
             <form id="uploadForm" class="space-y-4">
                 <div>
-                    <label for="fileInput" class="block text-sm font-medium text-gray-700 mb-1">Select File</label>
-                    <input type="file" id="fileInput" required class="block w-full text-sm text-gray-500
+                    <label for="fileInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select File</label>
+                    <input type="file" id="fileInput" required class="block w-full text-sm text-gray-500 dark:text-gray-400
                         file:mr-4 file:py-2 file:px-4
                         file:rounded-full file:border-0
                         file:text-sm file:font-semibold
-                        file:bg-indigo-100 file:text-indigo-700
-                        hover:file:bg-indigo-200 cursor-pointer"
+                        file:bg-indigo-100 dark:file:bg-indigo-600 file:text-indigo-700 dark:file:text-white
+                        hover:file:bg-indigo-200 dark:hover:file:bg-indigo-700 cursor-pointer"
                     />
                 </div>
                 <button type="submit" id="uploadButton"
-                    class="w-full sm:w-auto px-8 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]">
+                    class="w-full sm:w-auto px-8 py-3 bg-indigo-600 dark:bg-indigo-500 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]">
                     Upload to Drive
                 </button>
             </form>
@@ -70,11 +95,11 @@
         </section>
 
         <!-- Folder Contents Section -->
-        <section class="p-6 border border-gray-200 rounded-xl shadow-md">
+        <section class="p-6 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md transition-colors duration-300">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-semibold text-gray-800">Folder Contents</h2>
+                <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200">Folder Contents</h2>
                 <button id="refreshButton"
-                    class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition duration-300 disabled:opacity-50">
+                    class="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-300 disabled:opacity-50">
                     <svg id="refreshIcon" class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.995 8.995 0 0115 13H9m4-12H9.582M20 20v-5h-.582m0 0a8.995 8.995 0 01-5 1.776M9 13h6m-3 3v-6" />
                     </svg>
@@ -82,8 +107,8 @@
                 </button>
             </div>
 
-            <div id="fileListContainer" class="file-list max-h-96 overflow-y-auto border border-gray-300 rounded-lg p-4 bg-gray-50">
-                <p id="loadingList" class="text-center text-gray-500 py-4">Loading file list...</p>
+            <div id="fileListContainer" class="file-list max-h-96 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50">
+                <p id="loadingList" class="text-center text-gray-500 dark:text-gray-400 py-4">Loading file list...</p>
                 <ul id="fileList" class="space-y-3">
                     <!-- File items will be inserted here -->
                 </ul>
@@ -92,7 +117,7 @@
         </section>
 
         <!-- Built-in Console (Activity Log) -->
-        <section class="p-6 border border-gray-300 rounded-xl bg-gray-700 shadow-xl">
+        <section class="p-6 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-700 dark:bg-gray-900 shadow-xl">
             <div class="flex justify-between items-center mb-2">
                 <h2 class="text-xl font-semibold text-gray-100">Activity Log (Console)</h2>
                 <button id="clearConsoleButton" class="px-3 py-1 bg-gray-600 text-xs text-gray-200 rounded hover:bg-gray-500 transition duration-150">
@@ -108,10 +133,55 @@
 
     <script>
         // --- GOOGLE APPS SCRIPT WEB APP URL (IMPORTANT: DO NOT CHANGE THIS URL) ---
+        // This must be the /exec URL of your deployed Web App, not the /edit URL.
         const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbw0BUrVKuZd1a_2PuWiwrpGjE6ks4vj1VISW6gnQwx_JtyEU3TGFMkpdHW2pFBt6RWE/exec'; 
         
         const DRIVE_FOLDER_ID = '1KUaOHK5iALhZjxOG4YTUqYTU5_lDR1tM';
         const activityLogEl = document.getElementById('activityLog');
+        const htmlEl = document.documentElement;
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+
+
+        // --- Theme Switching Logic ---
+
+        function loadTheme() {
+            // Check for theme preference in localStorage, default to 'light'
+            const theme = localStorage.getItem('theme') || 'light';
+            
+            if (theme === 'dark') {
+                htmlEl.classList.add('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                htmlEl.classList.remove('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        }
+
+        function toggleTheme() {
+            if (htmlEl.classList.contains('dark')) {
+                // Switch to light mode
+                htmlEl.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                logToConsole('Switched to Light Mode', 'info');
+            } else {
+                // Switch to dark mode
+                htmlEl.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                logToConsole('Switched to Dark Mode', 'info');
+            }
+        }
+
+        // Attach event listener to the toggle button
+        themeToggleBtn.addEventListener('click', toggleTheme);
+        
 
         // --- Console/Logging Function ---
 
@@ -154,6 +224,7 @@
         function showMessage(elementId, message, type) {
             const el = document.getElementById(elementId);
             el.textContent = message;
+            // Removed dark mode classes from here as the body/container handles the general styling
             el.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
             if (type === 'success') {
                 el.classList.add('bg-green-100', 'text-green-700');
@@ -225,6 +296,7 @@
                     throw new Error(`Server returned status ${response.status}. See Activity Log.`);
                 }
             } catch (error) {
+                // Use the error message directly if it's a Fetch error (like "Failed to fetch")
                 logToConsole(`FATAL UPLOAD ERROR: ${error.message}`, 'error');
                 showMessage('uploadMessage', `Error during upload: ${error.message || 'Check Activity Log for details.'}`, 'error');
             } finally {
@@ -258,6 +330,7 @@
                 });
 
                 if (!response.ok) {
+                    // Check if the response is successful, even if fetching the content later fails.
                     throw new Error(`Failed to fetch list. Server status: ${response.status}`);
                 }
 
@@ -267,7 +340,7 @@
                 logToConsole(`List received. Found ${files.length} files.`, 'success');
 
                 if (files.length === 0) {
-                    listEl.innerHTML = '<li class="text-center text-gray-500 py-4">This folder is currently empty.</li>';
+                    listEl.innerHTML = '<li class="text-center text-gray-500 py-4 dark:text-gray-400">This folder is currently empty.</li>';
                 } else {
                     files.forEach(file => {
                         const listItem = document.createElement('li');
@@ -277,16 +350,17 @@
                         else if (file.mimeType.includes('spreadsheet')) { icon = '📊'; }
                         else if (file.mimeType.includes('document')) { icon = '✍️'; }
 
-                        listItem.className = 'flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg hover:shadow-md transition duration-150';
+                        // Apply dark mode classes to list items
+                        listItem.className = 'flex items-center justify-between p-3 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-lg hover:shadow-md dark:hover:shadow-lg dark:shadow-gray-900 transition duration-150';
                         listItem.innerHTML = `
                             <div class="flex items-center space-x-3 min-w-0">
                                 <span class="text-xl flex-shrink-0">${icon}</span>
                                 <div class="min-w-0">
-                                    <p class="font-medium text-gray-900 truncate">${file.name}</p>
-                                    <p class="text-xs text-gray-500">${new Date(file.createdTime).toLocaleDateString()} &middot; ${formatBytes(file.size)}</p>
+                                    <p class="font-medium text-gray-900 dark:text-gray-200 truncate">${file.name}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">${new Date(file.createdTime).toLocaleDateString()} &middot; ${formatBytes(file.size)}</p>
                                 </div>
                             </div>
-                            <a href="${file.webViewLink}" target="_blank" rel="noopener noreferrer" class="flex-shrink-0 text-indigo-500 hover:text-indigo-700 text-sm font-medium">
+                            <a href="${file.webViewLink}" target="_blank" rel="noopener noreferrer" class="flex-shrink-0 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">
                                 View
                             </a>
                         `;
@@ -296,7 +370,7 @@
             } catch (error) {
                 logToConsole(`FATAL LIST ERROR: ${error.message}`, 'error');
                 showMessage('listMessage', `Failed to load file list. Error: ${error.message}`, 'error');
-                listEl.innerHTML = '<li class="text-center text-red-500 py-4">Error loading data. See Activity Log.</li>';
+                listEl.innerHTML = '<li class="text-center text-red-500 py-4 dark:text-red-400">Error loading data. See Activity Log.</li>';
             } finally {
                 loadingEl.classList.add('hidden');
                 refreshButton.disabled = false;
@@ -306,8 +380,11 @@
 
         document.getElementById('refreshButton').addEventListener('click', fetchFileList);
 
-        // Initial fetch when the page loads
-        document.addEventListener('DOMContentLoaded', fetchFileList);
+        // Initial calls when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme(); // Load theme from local storage first
+            fetchFileList(); // Then fetch the file list
+        });
     </script>
 </body>
 </html>
