@@ -1,19 +1,10 @@
 [build]
 
-This command is needed to install Node.js dependencies for the functions
-
 command = "npm install"
-
-This tells Netlify where your serverless functions are located
 
 functions = "netlify/functions"
 
-Since index.html is in the root, we can set the publish directory to the root
-
 publish = "."
-
 [dev]
-
-Configuration for local development using netlify dev
 
 functions = "netlify/functions"
